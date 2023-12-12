@@ -2,7 +2,7 @@
 
 const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const { createTokenPair } = require("../auth/authUtils");
 const KeyTokenService = require("./keyToken.service");
 const { log } = require("console");
@@ -39,37 +39,38 @@ class AccessService {
 
       if (newShop) {
         // created privateKey and publicKey
-        const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-          privateKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-        });
+        // const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+        //   modulusLength: 4096,
+        //   publicKeyEncoding: {
+        //     type: "pkcs1",
+        //     format: "pem",
+        //   },
+        //   privateKeyEncoding: {
+        //     type: "pkcs1",
+        //     format: "pem",
+        //   },
+        // });
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
         // Public key CtyptoGraphy Standards
 
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         });
 
-        if (!publicKeyString) {
+        if (!keyStore) {
           return {
             code: "xxxx",
-            message: "publicKeyString error",
+            message: "keyStore error",
           };
         }
 
-        const publicKeyObject = crypto.createPublicKey(publicKeyString);
-        console.log(`publicKeyObject ::`, publicKeyObject);
-
+        // created token pair
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyString,
+          publicKey,
           privateKey
         );
 
