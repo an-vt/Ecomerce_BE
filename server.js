@@ -6,7 +6,7 @@ const {
 const PORT = port || 3055;
 
 const server = app.listen(PORT, () => {
-  console.log(`Start eCommerce start with ${PORT}`);
+  console.log(`Start eCommerce start with port:: ${PORT}`);
 });
 
 process.on("SIGINT", () => {

@@ -7,8 +7,6 @@ const {
 
 const connectString = `mongodb://${host}:${port}/${name}`;
 
-console.log("connectString::", connectString);
-
 class Database {
   constructor() {
     this.connect();
@@ -34,5 +32,5 @@ class Database {
   }
 }
 
-const insanceMongodb = Database.getInstance();
-module.exports = insanceMongodb;
+const instanceMongodb = Database.getInstance();
+module.exports = instanceMongodb;

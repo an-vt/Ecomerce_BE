@@ -40,7 +40,6 @@ const permission = (permission) => {
     }
 
     const validPermission = req.objKey.permissions.includes(permission);
-    4;
 
     if (!validPermission) {
       return res.status(403).json({
