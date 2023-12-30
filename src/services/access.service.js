@@ -155,39 +155,82 @@ class AccessService {
   };
 
   /*
-    Check token used ?
+    Check token used ? 
+    V1
   */
-  static handleRefetchToken = async (refreshToken) => {
-    //check token duoc su dung chua
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
-      refreshToken
-    );
-    console.log("foundToken", foundToken);
-    // found token cho vao blacklist
-    if (foundToken) {
-      // decode xem la thang nao ?
-      const { userId, email } = await verifyJWT(
-        refreshToken,
-        foundToken.privateKey
-      );
+  // static handleRefetchToken = async (refreshToken) => {
+  //   //check token duoc su dung chua
+  //   const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+  //     refreshToken
+  //   );
+  //   console.log("foundToken", foundToken);
+  //   // found token cho vao blacklist
+  //   if (foundToken) {
+  //     // decode xem la thang nao ?
+  //     const { userId, email } = await verifyJWT(
+  //       refreshToken,
+  //       foundToken.privateKey
+  //     );
 
-      console.log({ userId, email });
+  //     console.log({ userId, email });
+  //     // xoa tat ca token trong keyStore(token khong con han su dung, log out tat ca cac user)
+  //     await KeyTokenService.deleteById(userId);
+
+  //     throw new ForBiddenError("Something wrong happend. Please re-login");
+  //   }
+
+  //   // tim kiem la cac refresh token trong db co dung la dang duoc su dung hay khong
+  //   const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+
+  //   if (!holderToken) throw new AuthFailureError("Shop not registered");
+
+  //   //verify token
+  //   const { userId, email } = await verifyJWT(
+  //     refreshToken,
+  //     holderToken.privateKey
+  //   );
+
+  //   //check userId
+  //   const foundShop = await findByEmail({ email });
+  //   if (!foundShop) throw new AuthFailureError("Shop not registered");
+
+  //   // 1. Dua cai refresh token nay vao danh sach RT da duoc su dung
+  //   // 2. cap lai cap AT & RT
+  //   const tokens = await createTokenPair(
+  //     { userId: foundShop._id, email },
+  //     holderToken.publicKey,
+  //     holderToken.privateKey
+  //   );
+
+  //   //update token
+  //   await holderToken.updateOne({
+  //     $set: {
+  //       refreshToken: tokens.refreshToken,
+  //     },
+  //     $addToSet: {
+  //       refreshTokensUsed: refreshToken, //da duoc su dung de lay token moi roi
+  //     },
+  //   });
+
+  //   return {
+  //     user: { userId, email },
+  //     tokens,
+  //   };
+  // };
+
+  // v2 fixed
+  static handleRefetchTokenV2 = async ({ refreshToken, user, keyStore }) => {
+    const { userId, email } = user;
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       // xoa tat ca token trong keyStore(token khong con han su dung, log out tat ca cac user)
       await KeyTokenService.deleteById(userId);
 
       throw new ForBiddenError("Something wrong happend. Please re-login");
     }
 
-    // tim kiem la cac refresh token trong db co dung la dang duoc su dung hay khong
-    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-
-    if (!holderToken) throw new AuthFailureError("Shop not registered");
-
-    //verify token
-    const { userId, email } = await verifyJWT(
-      refreshToken,
-      holderToken.privateKey
-    );
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError("Shop not registered");
 
     //check userId
     const foundShop = await findByEmail({ email });
@@ -196,13 +239,13 @@ class AccessService {
     // 1. Dua cai refresh token nay vao danh sach RT da duoc su dung
     // 2. cap lai cap AT & RT
     const tokens = await createTokenPair(
-      { userId: foundShop._id, email },
-      holderToken.publicKey,
-      holderToken.privateKey
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
     );
 
     //update token
-    await holderToken.updateOne({
+    await keyStore.updateOne({
       $set: {
         refreshToken: tokens.refreshToken,
       },
@@ -212,7 +255,7 @@ class AccessService {
     });
 
     return {
-      user: { userId, email },
+      user,
       tokens,
     };
   };
