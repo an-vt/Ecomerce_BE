@@ -27,15 +27,18 @@ class ProductFactory {
   /**
    * type: 'Clothing' | 'Electronics'
    */
+
+  static ProductRegistry = {}; // key - class
+
+  static registerProductType(type, classRef) {
+    ProductFactory.ProductRegistry[type] = classRef;
+  }
+
   static async createProduct(type, payload) {
-    switch (type) {
-      case 'Clothing':
-        return new Clothing(payload).createProduct();
-      case 'Electronics':
-        return new Electronics(payload).createProduct();
-      default:
-        throw new BadRequestError(`Invalid Product Types: ${type}`)
-    }
+    const productClass = ProductFactory.ProductRegistry[type];
+    if (!productClass) throw new BadRequestError(`Invalid Product Type @@@ : ${type}`)
+
+    return new productClass(payload).createProduct()
   }
 }
 
@@ -100,14 +103,14 @@ class Electronics extends Product {
   }
 }
 
-// Define sub-class for different product types Furnitures
-class Furnitures extends Product {
+// Define sub-class for different product types Furniture
+class Furniture extends Product {
   async createProduct() {
     const newFurniture = await furniture.create({
       ...this.product_attributes,
       product_shop: this.product_shop
     });
-    if (!newFurniture) throw new BadRequestError("create new Furnitures error")
+    if (!newFurniture) throw new BadRequestError("create new Furniture error")
 
     const newProduct = await super.createProduct(newFurniture._id);
     if (!newProduct) throw new BadRequestError("create new Product error")
@@ -115,5 +118,10 @@ class Furnitures extends Product {
     return newProduct;
   }
 }
+
+// register product types
+ProductFactory.registerProductType("Electronic", Electronics)
+ProductFactory.registerProductType("Clothing", Clothing)
+ProductFactory.registerProductType("Furniture", Furniture)
 
 module.exports = ProductFactory;
