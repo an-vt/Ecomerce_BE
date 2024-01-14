@@ -13,10 +13,6 @@ var productSchema = new Schema(
       required: true,
       unique: true,
     },
-    product_thumb: {
-      type: String,
-      required: true,
-    },
     product_description: String,
     product_price: {
       type: Number,
@@ -27,9 +23,13 @@ var productSchema = new Schema(
       required: true,
     },
     product_type: {
-      type: Number,
+      type: String,
       required: true,
-      enum: ["Electronics", "Closing", "Furniture"],
+      enum: ["Electronics", "Clothing", "Furniture"],
+    },
+    product_thumb: {
+      type: String,
+      required: true,
     },
     product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
     product_attributes: { type: Schema.Types.Mixed, required: true },
@@ -44,9 +44,10 @@ var productSchema = new Schema(
 
 var clothingSchema = new Schema(
   {
-    branch: { type: String, required: true },
+    brand: { type: String, required: true },
     size: String,
     material: String,
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' }
   },
   {
     timestamps: true,
@@ -59,8 +60,9 @@ var clothingSchema = new Schema(
 var electronicSchema = new Schema(
   {
     manufacturing: { type: String, required: true },
-    size: String,
-    material: String,
+    model: String,
+    color: String,
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' }
   },
   {
     timestamps: true,
@@ -71,6 +73,6 @@ var electronicSchema = new Schema(
 //Export the model
 module.exports = {
   product: model(DOCUMENT_NAME, productSchema),
-  clothes: model("Clothing", clothingSchema),
+  clothing: model("Clothing", clothingSchema),
   electronics: model("Electronic", electronicSchema),
 };

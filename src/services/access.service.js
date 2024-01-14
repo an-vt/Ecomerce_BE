@@ -122,8 +122,6 @@ class AccessService {
         privateKey
       );
 
-      console.log(`Create token success`, tokens);
-
       return {
         code: 201,
         metadata: {
