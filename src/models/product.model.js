@@ -8,12 +8,13 @@ const COLLECTION_NAME = "Products";
 // Declare the Schema of the Mongo model
 var productSchema = new Schema(
   {
-    product_name: {
+    product_name: { // quan jean cao cap
       type: String,
       required: true,
       unique: true,
     },
     product_description: String,
+    product_slug: String, // quan-jean-cao-cap
     product_price: {
       type: Number,
       required: true,
@@ -33,6 +34,11 @@ var productSchema = new Schema(
     },
     product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
     product_attributes: { type: Schema.Types.Mixed, required: true },
+    product_ratingsAverage: {
+      type: Number, default: 4.5, min: [1, 'Rating must be above 1.0'], max: [5, 'Rating must be below 5.0'],
+      // 4.3424 => 4.3
+      set: (val) => Math.round(val * 10) / 10
+    },
   },
   {
     timestamps: true,
