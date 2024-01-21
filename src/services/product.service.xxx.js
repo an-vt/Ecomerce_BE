@@ -4,10 +4,13 @@ const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
 const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { log } = require("console");
-const { getInfoData } = require("../utils");
 const {
-  BadRequestError,
-} = require("../core/error.response");
+  getInfoData,
+  removeUndefinedObject,
+  removeUndefinedNestedObject,
+  updateObjectNestedParse,
+} = require("../utils");
+const { BadRequestError } = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 const {
   product,
@@ -15,7 +18,16 @@ const {
   electronic,
   furniture,
 } = require("../models/product.model");
-const { findAllDraftsForShop, publishProductByShop, findAllPublishForShop, unpublishProductByShop, searchProductByUser, findAllProducts, findProduct } = require("../models/repositories/product.repo");
+const {
+  findAllDraftsForShop,
+  publishProductByShop,
+  findAllPublishForShop,
+  unpublishProductByShop,
+  searchProductByUser,
+  findAllProducts,
+  findProduct,
+  updateProductById,
+} = require("../models/repositories/product.repo");
 
 // define Factory class to create product
 class ProductFactory {
@@ -37,8 +49,12 @@ class ProductFactory {
     return new productClass(payload).createProduct();
   }
 
-  static async updateProduct({ keySearch }) {
-    return await searchProductByUser({ keySearch });
+  static async updateProduct(type, productId, payload) {
+    const productClass = ProductFactory.ProductRegistry[type];
+    if (!productClass)
+      throw new BadRequestError(`Invalid Product Type: ${type}`);
+
+    return new productClass(payload).updateProduct(productId);
   }
 
   // QUERY
@@ -73,12 +89,23 @@ class ProductFactory {
     return await searchProductByUser({ keySearch });
   }
 
-  static async findAllProduct({ limit = 50, sort = 'ctime', page = 1, filter = { isPublished: true } }) {
-    return await findAllProducts({ limit, sort, page, filter, select: ["product_name", "product_price", "product_thumb"] });
+  static async findAllProduct({
+    limit = 50,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublished: true },
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ["product_name", "product_price", "product_thumb"],
+    });
   }
 
   static async findProduct({ product_id }) {
-    return await findProduct({ product_id, unSelect: ['__v'] });
+    return await findProduct({ product_id, unSelect: ["__v"] });
   }
   // END PUT
 }
@@ -109,6 +136,12 @@ class Product {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  // update product
+  async updateProduct(productId, bodyUpdate) {
+    // tra ve object true
+    return await updateProductById({ productId, bodyUpdate, model: product });
+  }
 }
 
 // Define sub-class for different product types Clothing
@@ -124,6 +157,29 @@ class Clothing extends Product {
     if (!newProduct) throw new BadRequestError("create new Product error");
 
     return newProduct;
+  }
+
+  /*
+  {
+    a: undefined,
+    b: null
+  }
+   */
+  async updateProduct(productId) {
+    // 1: remove attribute null or undefined
+    const objectParams = this;
+    // 2: check xem update o dau ? (neu update product_attributes thi update ca product (parent) va clothing (child)) neu khong thi chi can update o product (parent)
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: objectParams,
+        model: clothing,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(productId, objectParams);
+    return updateProduct;
   }
 }
 
@@ -157,6 +213,33 @@ class Furniture extends Product {
     if (!newProduct) throw new BadRequestError("create new Product error");
 
     return newProduct;
+  }
+
+  /*
+  {
+    a: undefined,
+    b: null
+  }
+   */
+  async updateProduct(productId) {
+    // 1: remove attribute null or undefined
+    const objectParams = removeUndefinedObject(this);
+    // removeUndefinedNestedObject(objectParams)
+    // 2: check xem update o dau ? (neu update product_attributes thi update ca product (parent) va clothing (child)) neu khong thi chi can update o product (parent)
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateObjectNestedParse(objectParams.product_attributes),
+        model: furniture,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateObjectNestedParse(objectParams)
+    );
+    return updateProduct;
   }
 }
 
