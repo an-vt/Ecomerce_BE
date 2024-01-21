@@ -16,10 +16,14 @@ const unGetSelectData = (select = []) => {
   return Object.fromEntries(select.map((el) => [el, 0]));
 };
 
+// remove attributes is null or undefined in both object and nested object
 const removeUndefinedObject = (obj) => {
   Object.keys(obj).forEach((k) => {
     if (obj[k] === null || obj[k] === undefined) {
       delete obj[k];
+    }
+    if (typeof obj[k] === "object" && !Array.isArray(obj[k])) {
+      obj[k] = removeUndefinedObject(obj[k]);
     }
   });
   return obj;
@@ -27,7 +31,6 @@ const removeUndefinedObject = (obj) => {
 
 const updateObjectNestedParse = (obj) => {
   const final = {};
-  console.log("[1] :::", obj);
   Object.keys(obj).forEach((k) => {
     if (typeof obj[k] === "object" && !Array.isArray(obj[k])) {
       const response = updateObjectNestedParse(obj[k]);
@@ -39,7 +42,6 @@ const updateObjectNestedParse = (obj) => {
       final[k] = obj[k];
     }
   });
-  console.log("[2] :::", final);
   return final;
 };
 
