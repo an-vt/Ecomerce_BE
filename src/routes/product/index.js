@@ -8,6 +8,8 @@ const router = express.Router();
 
 // search in here because user not authenticate still can search
 router.get("/search/:keySearch", asyncHandler(productController.getListSearchProduct));
+router.get("", asyncHandler(productController.findAllProducts));
+router.get("/:product_id", asyncHandler(productController.findProduct));
 
 // authentication before logout
 router.use(authenticationV2);
