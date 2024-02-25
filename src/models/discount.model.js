@@ -21,7 +21,7 @@ var discountSchema = new Schema(
     discount_start_date: { type: Date, required: true }, // ngay bat dau
     discount_end_date: { type: Date, required: true }, // ngay ket thuc
     discount_max_uses: { type: Number, required: true }, // toi da so luot su dung
-    discount_used_count: { type: Number, required: true }, // so luong da su dung
+    discount_used_count: { type: Number, required: false, default: 0 }, // so luong da su dung
     discount_users_used: { type: Array, default: [] }, // user nao su dung
     discount_max_uses_per_user: { type: Number, required: true }, // so luong luot su dung cua 1 user
     discount_min_order_value: { type: Number, required: true }, // min order value se duoc apply voucher

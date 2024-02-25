@@ -8,8 +8,9 @@ router.use(apiKey);
 // check permission
 router.use(permission("0000"));
 
-// update: move api product above access for handle search product 
+// update: move api product above access for handle search product
 router.use("/v1/api/product", require("./product"));
+router.use("/v1/api/discount", require("./discount"));
 router.use("/v1/api", require("./access"));
 
 module.exports = router;
