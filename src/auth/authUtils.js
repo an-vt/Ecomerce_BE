@@ -32,7 +32,7 @@ const createTokenPair = async (payload, publicKey, privatekey) => {
     });
 
     return { accessToken, refreshToken };
-  } catch (error) { }
+  } catch (error) {}
 };
 
 const authentication = asyncHandler(async (req, res, next) => {
@@ -100,9 +100,11 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // 4
   const accessToken = req.headers[HEADER.AUTHORIZATION];
-  if (!accessToken) throw new AuthFailureError("Invalid Request")
+  if (!accessToken) throw new AuthFailureError("Invalid Request");
 
+  // 5
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
     if (userId !== decodeUser.userId)
