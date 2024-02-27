@@ -25,6 +25,25 @@ class DiscountController {
       ),
     }).send(res);
   };
+
+  getAllProductByDiscountCode = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Get all product from discount success",
+      metadata: await DiscountService.getAllProductFromDiscountCode({
+        code: req.params.discountCode,
+        shopId: req.user.userId,
+      }),
+    }).send(res);
+  };
+
+  getAllDiscountCodeByShopId = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Get all discount code from shop id success",
+      metadata: await DiscountService.getAllDiscountCodeFromShopId({
+        shopId: req.user.userId,
+      }),
+    }).send(res);
+  };
 }
 
 module.exports = new DiscountController();

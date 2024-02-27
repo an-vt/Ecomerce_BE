@@ -82,7 +82,7 @@ class DiscountService {
   };
 
   static updateDiscountCode = async (discountId, payload) => {
-    const { start_date, end_date, shopId, name } = payload;
+    const { shopId, product_ids } = payload;
 
     if (!shopId) throw new BadRequestError("Invalid params");
 
@@ -94,7 +94,9 @@ class DiscountService {
     //   throw new BadRequestError("Start date must be greater end date");
     // }
 
-    const objectParams = removeUndefinedObject({ discount_name: name });
+    const objectParams = removeUndefinedObject({
+      discount_product_ids: product_ids,
+    });
     console.log({ objectParams });
     const updateDiscount = await updateDiscountByIdAndShopId(
       discountId,
@@ -108,12 +110,11 @@ class DiscountService {
   // get all product from discount code
   /**
     truong hop user da logged hay chua van co the xem duoc product 
-    => field userId co the co hoac khong
+    => field shopId co the co hoac khong
    */
   static getAllProductFromDiscountCode = async ({
     code,
     shopId,
-    userId,
     limit,
     page,
   }) => {
@@ -135,7 +136,7 @@ class DiscountService {
       // get all product
       products = await findAllProducts({
         filter: {
-          product_shop: convertToObjectIdMongodb(shop),
+          product_shop: convertToObjectIdMongodb(shopId),
           isPublished: true,
         },
         limit: +limit,
