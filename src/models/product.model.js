@@ -8,12 +8,16 @@ const COLLECTION_NAME = "Products";
 // Declare the Schema of the Mongo model
 var productSchema = new Schema(
   {
-    product_name: { // quan jean cao cap
+    product_name: {
+      // quan jean cao cap
       type: String,
       required: true,
       unique: true,
     },
-    product_description: String,
+    product_description: {
+      type: String,
+      required: true,
+    },
     product_slug: String, // quan-jean-cao-cap
     product_price: {
       type: Number,
@@ -53,7 +57,7 @@ var productSchema = new Schema(
 );
 
 // create index for search
-productSchema.index({ product_name: 'text', product_description: 'text' })
+productSchema.index({ product_name: "text", product_description: "text" });
 
 // Document middleware: run before .save() and .create() ...
 productSchema.pre("save", function (next) {
@@ -81,7 +85,7 @@ var electronicSchema = new Schema(
   {
     manufacturing: { type: String, required: true },
     model: String,
-    color: String,
+    size: String,
     product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
   },
   {

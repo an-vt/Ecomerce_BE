@@ -141,8 +141,8 @@ class Product {
       await insertInventory({
         productId: product_id,
         shopId: this.product_shop,
-        stock: this.product_quantity
-      })
+        stock: this.product_quantity,
+      });
     }
 
     return newProduct;
@@ -151,7 +151,12 @@ class Product {
   // update product
   async updateProduct(productId, productShopId, bodyUpdate) {
     // tra ve object true
-    return await updateProductByIdAndProductShop({ productId, productShopId, bodyUpdate, model: product });
+    return await updateProductByIdAndProductShop({
+      productId,
+      productShopId,
+      bodyUpdate,
+      model: product,
+    });
   }
 }
 
@@ -177,20 +182,28 @@ class Clothing extends Product {
   }
    */
   async updateProduct(productId, productShopId) {
+    if (!productId || !this.product_shop)
+      throw new BadRequestError("Invalid params");
+
     // 1: remove attribute null or undefined
-    const objectParams = this;
+    const objectParams = removeUndefinedObject(this);
     // 2: check xem update o dau ? (neu update product_attributes thi update ca product (parent) va clothing (child)) neu khong thi chi can update o product (parent)
     if (objectParams.product_attributes) {
       // update child
-      await updateProductByIdAndProductShop({
+      const clothingObjectUpdated = await updateProductByIdAndProductShop({
         productId,
         productShopId,
-        bodyUpdate: objectParams,
+        bodyUpdate: updateObjectNestedParse(objectParams.product_attributes),
         model: clothing,
       });
+      if (!clothingObjectUpdated) throw new BadRequestError("Not found object");
     }
 
-    const updateProduct = await super.updateProduct(productId, objectParams);
+    const updateProduct = await super.updateProduct(
+      productId,
+      productShopId,
+      updateObjectNestedParse(objectParams)
+    );
     return updateProduct;
   }
 }
@@ -209,6 +222,33 @@ class Electronics extends Product {
     if (!newProduct) throw new BadRequestError("create new Product error");
 
     return newProduct;
+  }
+
+  async updateProduct(productId, productShopId) {
+    if (!productId || !this.product_shop)
+      throw new BadRequestError("Invalid params");
+
+    // 1: remove attribute null or undefined
+    const objectParams = removeUndefinedObject(this);
+    // 2: check xem update o dau ? (neu update product_attributes thi update ca product (parent) va clothing (child)) neu khong thi chi can update o product (parent)
+    if (objectParams.product_attributes) {
+      // update child
+      const electronicObjectUpdated = await updateProductByIdAndProductShop({
+        productId,
+        productShopId,
+        bodyUpdate: updateObjectNestedParse(objectParams.product_attributes),
+        model: electronic,
+      });
+      if (!electronicObjectUpdated)
+        throw new BadRequestError("Not found object");
+    }
+
+    const updateProduct = await super.updateProduct(
+      productId,
+      productShopId,
+      updateObjectNestedParse(objectParams)
+    );
+    return updateProduct;
   }
 }
 
@@ -234,7 +274,8 @@ class Furniture extends Product {
   }
    */
   async updateProduct(productId, productShopId) {
-    if (!productId || !this.product_shop) throw new BadRequestError("Invalid params");
+    if (!productId || !this.product_shop)
+      throw new BadRequestError("Invalid params");
 
     // 1: remove attribute null or undefined
     const objectParams = removeUndefinedObject(this);
@@ -247,7 +288,8 @@ class Furniture extends Product {
         bodyUpdate: updateObjectNestedParse(objectParams.product_attributes),
         model: furniture,
       });
-      if (!furnitureObjectUpdated) throw new BadRequestError("Not found object")
+      if (!furnitureObjectUpdated)
+        throw new BadRequestError("Not found object");
     }
 
     const updateProduct = await super.updateProduct(
