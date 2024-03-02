@@ -1,5 +1,6 @@
 "use strict";
 
+const { model } = require("mongoose");
 const { unGetSelectData, convertToObjectIdMongodb } = require("../../utils");
 const discountModel = require("../discount.model");
 
@@ -63,8 +64,13 @@ const updateDiscountByIdAndShopId = async (
   );
 };
 
+const checkDiscountExist = async ({ model, filter }) => {
+  return await model.findOne(filter).learn();
+};
+
 module.exports = {
   findAllDiscountCodeUnSelect,
   findAllDiscountCodeSelect,
   updateDiscountByIdAndShopId,
+  checkDiscountExist,
 };

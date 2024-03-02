@@ -5,6 +5,11 @@ const { Schema, model } = require("mongoose"); // Erase if already required
 const DOCUMENT_NAME = "Discount";
 const COLLECTION_NAME = "Discounts";
 
+const DiscountType = {
+  FIXED_AMOUNT: "fixed_amount",
+  PERCENT: "percent",
+};
+
 // Declare the Schema of the Mongo model
 var discountSchema = new Schema(
   {
@@ -41,4 +46,7 @@ var discountSchema = new Schema(
 );
 
 //Export the model
-module.exports = model(DOCUMENT_NAME, discountSchema);
+module.exports = {
+  discountModel: model(DOCUMENT_NAME, discountSchema),
+  DiscountType,
+};
