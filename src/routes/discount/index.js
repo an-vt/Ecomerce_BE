@@ -6,15 +6,16 @@ const { asyncHandler } = require("../../helpers/asyncHandler");
 const { authenticationV2 } = require("../../auth/authUtils");
 const router = express.Router();
 
-router.get("/all", asyncHandler(discountController.getAllDiscountCodeByShopId));
 router.get(
-  "/product/:discountCode",
+  "/list_product_Code",
   asyncHandler(discountController.getAllProductByDiscountCode)
 );
+router.post("/amount", asyncHandler(discountController.getDiscountAmount));
 
 // authentication before logout
 router.use(authenticationV2);
 
+router.get("", asyncHandler(discountController.getAllDiscountCodeByShopId));
 router.post("", asyncHandler(discountController.createDiscount));
 router.patch("/:discountId", asyncHandler(discountController.updateDiscount));
 
