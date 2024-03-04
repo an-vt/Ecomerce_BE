@@ -221,6 +221,10 @@ class DiscountService {
       discount_max_uses,
       discount_type,
       discount_value,
+      discount_end_date,
+      discount_start_date,
+      discount_max_uses_per_user,
+      discount_users_used,
     } = foundDiscount;
 
     if (!discount_is_active) throw new NotFoundError("Discount expired");
