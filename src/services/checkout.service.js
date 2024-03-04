@@ -80,6 +80,7 @@ class CheckoutService {
           code: shop_discounts[0].codeId,
           shopId,
           carts: checkProductServers,
+          userId,
         });
 
         // tong cong discount giam gia

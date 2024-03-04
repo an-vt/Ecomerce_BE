@@ -204,7 +204,7 @@ class DiscountService {
       }
     ]
    */
-  static getDiscountAmount = async ({ code, shopId, carts }) => {
+  static getDiscountAmount = async ({ code, shopId, userId, carts }) => {
     const foundDiscount = await checkDiscountExists({
       model: discountModel,
       filter: {
