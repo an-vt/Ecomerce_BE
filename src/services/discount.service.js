@@ -265,7 +265,7 @@ class DiscountService {
     const amount =
       discount_type === DiscountType.FIXED_AMOUNT
         ? discount_value
-        : discount_value / 100;
+        : (discount_value / 100) * totalOrder;
 
     return {
       discount: amount,
