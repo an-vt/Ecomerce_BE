@@ -11,7 +11,6 @@ const {
   updateObjectNestedParse,
 } = require("../utils");
 const { BadRequestError } = require("../core/error.response");
-const { findByEmail } = require("./shop.service");
 const {
   product,
   clothing,
@@ -28,7 +27,11 @@ const {
   findProduct,
   updateProductByIdAndProductShop,
 } = require("../models/repositories/product.repo");
-const { insertInventory } = require("../models/repositories/inventory.repo");
+const {
+  insertInventory,
+  updateInventory,
+} = require("../models/repositories/inventory.repo");
+const { isNumber } = require("lodash");
 
 // define Factory class to create product
 class ProductFactory {
@@ -156,12 +159,26 @@ class Product {
   // update product
   async updateProduct(productId, productShopId, bodyUpdate) {
     // tra ve object true
-    return await updateProductByIdAndProductShop({
+    const updateProduct = await updateProductByIdAndProductShop({
       productId,
       productShopId,
       bodyUpdate,
       model: product,
     });
+
+    // if update quantity product => update quantity in inventory
+    if (isNumber(bodyUpdate?.product_quantity)) {
+      const inventoryUpdate = {
+        inven_stock: bodyUpdate.product_quantity,
+      };
+      await updateInventory({
+        productId,
+        shopId: productShopId,
+        bodyUpdate: inventoryUpdate,
+      });
+    }
+
+    return updateProduct;
   }
 }
 
