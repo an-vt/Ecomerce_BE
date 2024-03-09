@@ -36,7 +36,11 @@ const updateInventory = async ({
 };
 
 const findInventoryByProductId = async (productId) => {
-  return await inventory.findById(productId).lean();
+  return await inventory
+    .findOne({
+      inven_productId: convertToObjectIdMongodb(productId),
+    })
+    .lean();
 };
 
 module.exports = {

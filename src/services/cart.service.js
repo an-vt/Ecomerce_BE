@@ -16,6 +16,9 @@ const {
 const { findByEmail } = require("./shop.service");
 const cartModel = require("../models/cart.model");
 const { getProductById } = require("../models/repositories/product.repo");
+const {
+  findInventoryByProductId,
+} = require("../models/repositories/inventory.repo");
 
 /**
  * Key feature
@@ -34,6 +37,7 @@ class CartService {
         $addToSet: {
           cart_products: product,
         },
+        cart_count_product: 1,
       },
       options = { upsert: true, new: true };
 
@@ -64,6 +68,14 @@ class CartService {
       product?.productId
     );
 
+    // kiem tra inventory, neu khong du so luong hang tra ve error
+    const inventoryProduct = await findInventoryByProductId(product?.productId);
+
+    if (inventoryProduct.inven_stock < product.quantity)
+      throw new ForBiddenError(
+        "Inventory product don't enough quantity. Please try again"
+      );
+
     const productCart = {
       productId: _id,
       shopId: product?.shopId,
@@ -83,6 +95,18 @@ class CartService {
     // neu cos gio hang roi nhung chua co san pham
     if (!userCart?.cart_products?.length) {
       userCart.cart_products = [productCart];
+      return await userCart.save();
+    }
+
+    // check productId exist hay khong
+    const existingProduct = userCart.cart_products.find((product) => {
+      return product.productId.toString() === productCart.productId.toString();
+    });
+
+    // them 1 san pham moi vao gio hang
+    if (!existingProduct) {
+      userCart.cart_products.push(productCart);
+      userCart.cart_count_product = userCart.cart_products.length;
       return await userCart.save();
     }
 
@@ -121,6 +145,13 @@ class CartService {
     //compare product shop
     if (foundProduct.product_shop.toString() !== shop_order_ids?.[0]?.shopId)
       throw new NotFoundError(`Product doesn't belong to the shop`);
+
+    // kiem tra inventory, neu khong du so luong hang tra ve error
+    const inventoryProduct = await findInventoryByProductId(productId);
+    if (inventoryProduct.inven_stock < quantity)
+      throw new ForBiddenError(
+        "Inventory product don't enough quantity. Please try again"
+      );
 
     // xoa san pham
     if (quantity === 0) {
