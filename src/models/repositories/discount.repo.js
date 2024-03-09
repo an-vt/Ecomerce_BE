@@ -1,7 +1,7 @@
 "use strict";
 
 const { unGetSelectData, convertToObjectIdMongodb } = require("../../utils");
-const discountModel = require("../discount.model");
+const { discountModel } = require("../discount.model");
 
 const findAllDiscountCodeUnSelect = async ({
   limit = 50,

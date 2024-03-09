@@ -87,13 +87,13 @@ class DiscountService {
   };
 
   static updateDiscountCode = async (discountId, payload) => {
-    const { shopId, product_ids, end_date, start_date } = payload;
+    const { shopId, product_ids, end_date, start_date, applies_to } = payload;
 
     if (!shopId) throw new BadRequestError("Invalid params");
 
     if (
-      isAfter(new Date(), new Date(start_date)) ||
-      isAfter(new Date(), new Date(end_date))
+      DateValidation.isAfter(new Date(), new Date(start_date)) ||
+      DateValidation.isAfter(new Date(), new Date(end_date))
     ) {
       throw new BadRequestError("Discount code has expired!");
     }
@@ -104,6 +104,7 @@ class DiscountService {
 
     const objectParams = removeUndefinedObject({
       discount_product_ids: product_ids,
+      discount_applies_to: applies_to,
     });
     const updateDiscount = await updateDiscountByIdAndShopId(
       discountId,
@@ -225,6 +226,8 @@ class DiscountService {
       discount_start_date,
       discount_max_uses_per_user,
       discount_users_used,
+      discount_applies_to,
+      discount_product_ids,
     } = foundDiscount;
 
     if (!discount_is_active) throw new NotFoundError("Discount expired");
@@ -239,10 +242,33 @@ class DiscountService {
     }
 
     let totalOrder = 0;
+    let totalAmount = 0;
     if (discount_min_order_value > 0) {
-      totalOrder = carts.reduce((acc, cart) => {
-        return acc + cart.quantity * cart.price;
-      }, 0);
+      if (discount_applies_to === "all") {
+        totalOrder = carts.reduce((acc, cartItem) => {
+          return acc + cartItem.quantity * cartItem.price;
+        }, 0);
+
+        // check xem discount nay la fixed-amount hay all
+        totalAmount =
+          discount_type === DiscountType.FIXED_AMOUNT
+            ? discount_value
+            : (discount_value / 100) * totalOrder;
+      } else {
+        totalOrder = carts.reduce((acc, cartItem) => {
+          // caculate discount amount for specific product
+          const totalCartItem = cartItem.quantity * cartItem.price;
+          if (discount_product_ids.includes(cartItem.productId)) {
+            const amount =
+              discount_type === DiscountType.FIXED_AMOUNT
+                ? discount_value
+                : (discount_value / 100) * totalCartItem;
+            totalAmount += amount;
+          }
+
+          return acc + totalCartItem;
+        }, 0);
+      }
 
       if (totalOrder < discount_min_order_value) {
         throw new NotFoundError(
@@ -261,16 +287,10 @@ class DiscountService {
       }
     }
 
-    // check xem discount nay la fixed-amount hay all
-    const amount =
-      discount_type === DiscountType.FIXED_AMOUNT
-        ? discount_value
-        : (discount_value / 100) * totalOrder;
-
     return {
-      discount: amount,
+      discount: totalAmount,
       totalOrder,
-      totalPrice: totalOrder - amount,
+      totalPrice: totalOrder - totalAmount,
     };
   };
 
