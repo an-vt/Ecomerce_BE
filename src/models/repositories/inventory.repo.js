@@ -43,8 +43,29 @@ const findInventoryByProductId = async (productId) => {
     .lean();
 };
 
+const reservationInventory = async ({ productId, quantity, cartId }) => {
+  const query = {
+      inven_productId: convertToObjectIdMongodb(productId),
+      inven_stock: { $gte: quantity },
+    },
+    updateSet = {
+      $inc: {
+        inven_stock: -quantity,
+      },
+      $push: {
+        inven_reservations: {
+          quantity,
+          cartId,
+          createOn: new Date(),
+        },
+      },
+    };
+  return await inventory.updateOne(query, updateSet);
+};
+
 module.exports = {
   insertInventory,
   updateInventory,
   findInventoryByProductId,
+  reservationInventory,
 };

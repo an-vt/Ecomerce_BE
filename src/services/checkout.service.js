@@ -1,9 +1,11 @@
 "use strict";
 
 const { BadRequestError } = require("../core/error.response");
+const orderModel = require("../models/order.model");
 const { findCartById } = require("../models/repositories/cart.repo");
 const { checkProductByServer } = require("../models/repositories/product.repo");
 const { getDiscountAmount } = require("./discount.service");
+const { acquireLock, releaseLock } = require("./redis.service");
 
 class CheckoutService {
   /**
@@ -103,6 +105,53 @@ class CheckoutService {
       checkout_order,
     };
   };
+
+  static async orderByUser({
+    shop_order_ids,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {},
+  }) {
+    const { shop_order_ids: shop_order_ids_new, checkout_order } =
+      CheckoutService.checkoutReview({ shop_order_ids, cartId, userId });
+
+    // check lai mot lan nua xem co vuot ton kho hay khong
+    // get new array products
+    const products = shop_order_ids_new.flatMap((order) => order.item_products);
+    console.log(`[1] ::: ${products}`);
+    const acquireProduct = [];
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProduct.push(keyLock ? true : false);
+
+      if (keyLock) {
+        await releaseLock(keyLock);
+      }
+    }
+
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError(
+        "A few product had just update. Please checkout cart again!"
+      );
+    }
+
+    const newOrder = await orderModel.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: userId,
+      order_products: shop_order_ids_new,
+    });
+
+    // truong hop: new insert thanh cong, thi remove product co trong cart
+    if (newOrder) {
+      // remove product in cart
+    }
+
+    return newOrder;
+  }
 }
 
 module.exports = CheckoutService;
