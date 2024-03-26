@@ -16,10 +16,17 @@ app.use(
     extended: true,
   })
 );
+// test redis pub/sub
+require("./tests/inventory.test");
+const productTest = require("./tests/product.test");
+productTest.purchaseProduct("product:001", 100);
 
 // init db
 require("./dbs/init.mongodb");
 // checkOverload();
+// init redis
+const initRedis = require("./dbs/init.redis");
+initRedis.initRedis();
 
 // init routes
 app.use("/", require("./routes"));
