@@ -17,9 +17,9 @@ app.use(
   })
 );
 // test redis pub/sub
-require("./tests/inventory.test");
-const productTest = require("./tests/product.test");
-productTest.purchaseProduct("product:001", 100);
+// require("./tests/inventory.test");
+// const productTest = require("./tests/product.test");
+// productTest.purchaseProduct("product:001", 100);
 
 // init db
 require("./dbs/init.mongodb");

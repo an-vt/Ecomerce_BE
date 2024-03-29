@@ -116,6 +116,11 @@ class ProductFactory {
   static async findProduct({ product_id }) {
     return await findProduct({ product_id, unSelect: ["__v"] });
   }
+
+  static async checkProductExist({ product_id }) {
+    const product = await findProduct({ product_id, unSelect: ["__v"] });
+    return !!product;
+  }
   // END PUT
 }
 
