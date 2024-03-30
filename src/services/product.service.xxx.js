@@ -32,6 +32,7 @@ const {
   updateInventory,
 } = require("../models/repositories/inventory.repo");
 const { isNumber } = require("lodash");
+const NotificationService = require("./notification.service");
 
 // define Factory class to create product
 class ProductFactory {
@@ -156,6 +157,19 @@ class Product {
         shopId: this.product_shop,
         stock: this.product_quantity,
       });
+
+      // push noti to system collection
+      NotificationService.createComment({
+        type: "SHOP-001",
+        receiverId: 1,
+        senderId: this.product_shop,
+        options: {
+          product_name: this.product_name,
+          shop_name: this.product_shop,
+        },
+      })
+        .then((res) => console.log(res))
+        .catch(console.error);
     }
 
     return newProduct;
