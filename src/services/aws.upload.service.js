@@ -1,12 +1,8 @@
 "use strict";
-const {
-  s3,
-  PutObjectCommand,
-  GetObjectCommand,
-} = require("../configs/s3.config");
+const { s3, PutObjectCommand } = require("../configs/s3.config");
 const { BadRequestError } = require("../core/error.response");
 const crypto = require("node:crypto");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
 
 const randomImageName = () => crypto.randomBytes(16).toString("hex");
 
@@ -21,16 +17,19 @@ const uploadImageFromLocalS3 = async ({ file }) => {
       ContentType: "image/jpeg",
     });
 
-    await s3.send(command);
+    const result = await s3.send(command);
 
-    const singeUrl = new GetObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: imageName,
+    const url = getSignedUrl({
+      url: `${process.env.AWS_CLOUD_FONT_DISTRIBUTION}/${imageName}`,
+      keyPairId: process.env.AWS_CLOUD_FONT_KEY_PAIR_ID,
+      dateLessThan: new Date(Date.now() + 1000 * 600), // expires in 1 minute
+      privateKey: process.env.AWS_CLOUD_FONT_PRIVATE_KEY,
     });
 
-    const url = await getSignedUrl(s3, singeUrl, { expiresIn: 3600 });
-
-    return url;
+    return {
+      url,
+      result,
+    };
   } catch (error) {
     console.log("Error upload image from local s3", error);
     throw new BadRequestError("Error upload image from local s3");
