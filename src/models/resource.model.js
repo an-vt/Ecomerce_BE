@@ -8,7 +8,7 @@ const COLLECTION_NAME = "Resources";
 // Declare the Schema of the Mongo model
 var resourceSchema = new Schema(
   {
-    src_name: { type: Number, required: true }, //profile
+    src_name: { type: String, required: true }, //profile
     src_slug: { type: String, required: true }, // 00001
     src_description: { type: String, default: "" },
   },
