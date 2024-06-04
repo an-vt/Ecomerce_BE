@@ -1,11 +1,23 @@
 "use strict";
 
+// const logger = require("../logger/winston.log");
+const myLogger = require("../logger/mylogger.log");
 const { StatusCodes, ReasonPhrases } = require("../utils/httpStatusCode");
 
 class ErrorResponse extends Error {
   constructor(message, status) {
     super(message);
     this.status = status;
+    this.now = Date.now();
+
+    // Log the error use winston
+    // logger.error(`${this.status} - ${this.message}`);
+
+    // myLogger.error(this.message, [
+    //   "/api/v1/login",
+    //   "v1122",
+    //   { error: "missing email" },
+    // ]);
   }
 }
 

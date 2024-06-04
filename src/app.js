@@ -5,6 +5,9 @@ const { default: helmet } = require("helmet");
 const compression = require("compression");
 const { checkOverload } = require("./helpers/checkConnect");
 const app = express();
+const myLogger = require("./logger/mylogger.log");
+const initRedis = require("./dbs/init.redis");
+const { v4: uuidv4 } = require("uuid");
 
 // init middlewares
 app.use(morgan("dev"));
@@ -16,6 +19,20 @@ app.use(
     extended: true,
   })
 );
+
+app.use((req, res, next) => {
+  const requestId = req.headers["x-request-id"] || uuidv4();
+  req.requestId = requestId;
+
+  myLogger.log(`Input params ::${req.method}::`, [
+    req.path,
+    { requestId: req.requestId },
+    req.method === "POST" ? req.body : req.query,
+  ]);
+
+  next();
+});
+
 // test redis pub/sub
 // require("./tests/inventory.test");
 // const productTest = require("./tests/product.test");
@@ -25,7 +42,6 @@ app.use(
 require("./dbs/init.mongodb");
 // checkOverload();
 // init redis
-const initRedis = require("./dbs/init.redis");
 initRedis.initRedis();
 
 // init routes
@@ -40,6 +56,15 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
   const statusCode = error.status || 500;
+  const resMessage = `${statusCode} - ${
+    Date.now() - error.now
+  }ms - response: ${JSON.stringify(error)}`;
+
+  myLogger.error(resMessage, [
+    req.path,
+    { requestId: req.requestId },
+    { message: req.message },
+  ]);
 
   return res.status(statusCode).json({
     status: "error",
