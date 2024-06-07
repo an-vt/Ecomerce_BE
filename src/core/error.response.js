@@ -82,4 +82,5 @@ module.exports = {
   NotFoundError,
   ForBiddenError,
   RedisErrorResponse,
+  ErrorResponse,
 };
