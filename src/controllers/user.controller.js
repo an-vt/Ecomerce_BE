@@ -10,6 +10,15 @@ class UserController {
       metadata: await UserService.newUser(req.body),
     }).send(res);
   };
+
+  checkLoginEmailToken = async (req, res, next) => {
+    new SuccessResponse({
+      message: "check login email token success",
+      metadata: await UserService.checkLoginEmailTokenService({
+        token: req.query.token,
+      }),
+    }).send(res);
+  };
 }
 
 module.exports = new UserController();

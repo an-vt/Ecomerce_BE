@@ -48,7 +48,7 @@ const sendEmailToken = async ({ email }) => {
 
     // 3. replace placeholder with params
     const html = replacePlaceholder(template.tem_html, {
-      token: `http://localhost:3000/verify?token=${token.otp_token}`,
+      token: `http://localhost:3000/v1/api/user/welcome_back?token=${token.otp_token}`,
     });
 
     // 4. send email
