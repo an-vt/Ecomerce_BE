@@ -2,8 +2,14 @@
 
 const JWT = require("jsonwebtoken");
 const { asyncHandler } = require("../helpers/asyncHandler");
-const { AuthFailureError, NotFoundError } = require("../core/error.response");
+const {
+  AuthFailureError,
+  NotFoundError,
+  BadRequestError,
+  ForBiddenError,
+} = require("../core/error.response");
 const { findByUserId } = require("../services/keyToken.service");
+const { StatusCodes } = require("../utils/httpStatusCode");
 
 const HEADER = {
   API_KEY: "x-api-key",
@@ -16,7 +22,7 @@ const createTokenPair = async (payload, publicKey, privatekey) => {
   try {
     // accessToken
     const accessToken = await JWT.sign(payload, publicKey, {
-      expiresIn: "2 days",
+      expiresIn: "30s",
     });
 
     const refreshToken = await JWT.sign(payload, privatekey, {
@@ -96,7 +102,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
       req.refreshToken = refreshToken;
       return next();
     } catch (error) {
-      throw error;
+      throw new ForBiddenError();
     }
   }
 
@@ -113,7 +119,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     req.user = decodeUser;
     return next();
   } catch (error) {
-    throw error;
+    throw new BadRequestError("Invalid token", StatusCodes.UNAUTHORIZED);
   }
 });
 
