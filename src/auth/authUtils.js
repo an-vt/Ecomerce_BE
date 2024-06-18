@@ -6,7 +6,6 @@ const {
   AuthFailureError,
   NotFoundError,
   BadRequestError,
-  ForBiddenError,
 } = require("../core/error.response");
 const { findByUserId } = require("../services/keyToken.service");
 const { StatusCodes } = require("../utils/httpStatusCode");
@@ -102,7 +101,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
       req.refreshToken = refreshToken;
       return next();
     } catch (error) {
-      throw new ForBiddenError();
+      throw new AuthFailureError("Invalid request");
     }
   }
 
