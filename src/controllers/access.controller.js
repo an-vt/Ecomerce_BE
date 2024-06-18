@@ -2,10 +2,21 @@
 const { CREATED, SuccessResponse } = require("../core/success.response");
 const AccessService = require("../services/access.service");
 
+function setCookie(res, refreshToken, expires = 3 * 24 * 60 * 60 * 10) {
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true, // Makes the cookie inaccessible to client-side JS
+    maxAge: expires,
+    path: "/v1/api/shop/handleRefreshToken",
+    secure: false,
+  });
+}
+
 class AccessControler {
   login = async (req, res, next) => {
+    const metadata = await AccessService.login(req.body);
+    setCookie(res, metadata.tokens.refreshToken);
     new SuccessResponse({
-      metadata: await AccessService.login(req.body),
+      metadata,
     }).send(res);
   };
 
@@ -20,9 +31,11 @@ class AccessControler {
   };
 
   logout = async (req, res, next) => {
+    const metadata = await AccessService.logout(req.keyStore);
+    setCookie(res, metadata.tokens.refreshToken, new Date(0));
     new SuccessResponse({
       message: "Logout success",
-      metadata: await AccessService.logout(req.keyStore),
+      metadata,
     }).send(res);
   };
 
@@ -32,15 +45,20 @@ class AccessControler {
     //   message: "Get token success",
     //   metadata: await AccessService.handleRefetchToken(req.body.refreshToken),
     // }).send(res);
-
+    const refreshToken = req.cookies?.["refreshToken"];
     // V2 fixed, no need accessToken
+
+    const metadata = await AccessService.handleRefetchTokenV2({
+      refreshToken,
+      user: req.user,
+      keyStore: req.keyStore,
+    });
+
+    setCookie(res, metadata.tokens.refreshToken);
+
     new SuccessResponse({
       message: "Get token success",
-      metadata: await AccessService.handleRefetchTokenV2({
-        refreshToken: req.refreshToken,
-        user: req.user,
-        keyStore: req.keyStore,
-      }),
+      metadata: metadata,
     }).send(res);
   };
 }

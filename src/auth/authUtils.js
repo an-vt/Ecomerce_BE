@@ -89,10 +89,10 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
   const keyStore = await findByUserId(userId);
   if (!keyStore) throw new NotFoundError("Not found keyStore");
 
+  const refreshToken = req.cookies?.["refreshToken"];
   // 3
-  if (req.headers[HEADER.REFRESH_TOKEN]) {
+  if (refreshToken) {
     try {
-      const refreshToken = req.headers[HEADER.REFRESH_TOKEN];
       const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
       if (userId !== decodeUser.userId)
         throw new AuthFailureError("Invalid userId");

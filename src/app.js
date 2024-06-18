@@ -8,12 +8,22 @@ const app = express();
 const myLogger = require("./logger/mylogger.log");
 const initRedis = require("./dbs/init.redis");
 const { v4: uuidv4 } = require("uuid");
+const cors = require("cors"); //
+var cookieParser = require("cookie-parser");
 
 // init middlewares
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(
   express.urlencoded({
     extended: true,
