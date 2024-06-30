@@ -10,6 +10,9 @@ const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData, convertToObjectIdMongodb } = require("../utils");
 const crypto = require("node:crypto");
+const {
+  runProducerEmail,
+} = require("../tests/message_queue/rabbitmq/providerDLXEmail.producer");
 
 class UserService {
   static newUser = async ({ email, captcha }) => {
@@ -25,6 +28,9 @@ class UserService {
     const result = await sendEmailToken({ email });
 
     return result;
+  };
+  static sendmail = async ({ email, captcha }) => {
+    runProducerEmail().catch(console.error);
   };
 
   static checkLoginEmailTokenService = async ({ token }) => {

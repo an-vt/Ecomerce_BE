@@ -1,12 +1,12 @@
 const amqp = require("amqplib");
 
-const messages = "Hello from RabbitMQ provider";
+const messages = "Send email from provider";
 
-const runProducer = async () => {
+const runProducerEmail = async () => {
   const connection = await amqp.connect("amqp://localhost");
   const channel = await connection.createChannel();
 
-  const queueName = "test-topic";
+  const queueName = "send_mail";
   await channel.assertQueue(queueName, {
     durable: true,
   });
@@ -19,6 +19,6 @@ const runProducer = async () => {
   }, 0);
 };
 
-runProducer().catch(console.error);
+runProducerEmail().catch(console.error);
 
-module.exports = { runProducer };
+module.exports = { runProducerEmail };
