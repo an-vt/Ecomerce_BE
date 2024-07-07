@@ -19,6 +19,14 @@ class UserController {
       }),
     }).send(res);
   };
+
+  // new user
+  sendMail = async (req, res, next) => {
+    new SuccessResponse({
+      message: "send mail test success",
+      metadata: await UserService.sendmail(req.body),
+    }).send(res);
+  };
 }
 
 module.exports = new UserController();

@@ -1,12 +1,12 @@
-const amqp = require("amqplib");
+const amqp = require('amqplib');
 
-const messages = "Hello from RabbitMQ provider";
+const messages = 'Hello from RabbitMQ provider';
 
 const runProducer = async () => {
-  const connection = await amqp.connect("amqp://localhost");
+  const connection = await amqp.connect('amqp://localhost');
   const channel = await connection.createChannel();
 
-  const queueName = "test-topic";
+  const queueName = 'test-topic';
   await channel.assertQueue(queueName, {
     durable: true,
   });
