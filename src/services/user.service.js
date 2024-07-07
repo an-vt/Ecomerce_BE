@@ -8,11 +8,7 @@ const bcrypt = require('bcrypt');
 const { createUserRepo } = require('../models/repositories/user.repo');
 const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
-const {
-  getInfoData,
-  convertToObjectIdMongodb,
-  replacePlaceholder,
-} = require('../utils');
+const { getInfoData, replacePlaceholder } = require('../utils');
 const crypto = require('node:crypto');
 const {
   runProducerEmail,
