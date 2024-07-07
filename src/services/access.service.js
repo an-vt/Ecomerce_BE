@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const shopModel = require("../models/shop.model");
-const bcrypt = require("bcrypt");
-const crypto = require("node:crypto");
-const { createTokenPair, verifyJWT } = require("../auth/authUtils");
-const KeyTokenService = require("./keyToken.service");
-const { log } = require("console");
-const { getInfoData } = require("../utils");
+const shopModel = require('../models/shop.model');
+const bcrypt = require('bcrypt');
+const crypto = require('node:crypto');
+const { createTokenPair, verifyJWT } = require('../auth/authUtils');
+const KeyTokenService = require('./keyToken.service');
+const { log } = require('console');
+const { getInfoData } = require('../utils');
 const {
   BadRequestError,
   AuthFailureError,
   ForBiddenError,
-} = require("../core/error.response");
-const { findByEmail } = require("./shop.service");
+} = require('../core/error.response');
+const { findByEmail } = require('./shop.service');
 
 const RoleShop = {
-  SHOP: "SHOP",
-  WRITER: "WRITER",
-  EDITOR: "EDITOR",
-  ADMIN: "ADMIN",
+  SHOP: 'SHOP',
+  WRITER: 'WRITER',
+  EDITOR: 'EDITOR',
+  ADMIN: 'ADMIN',
 };
 
 class AccessService {
@@ -33,15 +33,15 @@ class AccessService {
   static login = async ({ email, password, refreshToken = null }) => {
     // 1.
     const foundShop = await findByEmail({ email });
-    if (!foundShop) throw new BadRequestError("Shop not registered");
+    if (!foundShop) throw new BadRequestError('Shop not registered');
 
     // 2.
-    const match = bcrypt.compare(password, foundShop.password);
-    if (!match) throw new AuthFailureError("Authentication error");
+    const match = await bcrypt.compare(password, foundShop.password);
+    if (!match) throw new AuthFailureError('Authentication error');
 
     // 3.
-    const privateKey = crypto.randomBytes(64).toString("hex");
-    const publicKey = crypto.randomBytes(64).toString("hex");
+    const privateKey = crypto.randomBytes(64).toString('hex');
+    const publicKey = crypto.randomBytes(64).toString('hex');
 
     // 4.
     const tokens = await createTokenPair(
@@ -60,7 +60,7 @@ class AccessService {
     // 5.
     return {
       shop: getInfoData({
-        fields: ["_id", "name", "email"],
+        fields: ['_id', 'name', 'email'],
         object: foundShop,
       }),
       tokens,
@@ -74,7 +74,7 @@ class AccessService {
     // return object js, more faster only findOne because findOne return so much information about mongo connection
     const holderShop = await shopModel.findOne({ email }).lean();
     if (holderShop) {
-      throw new BadRequestError("Error: Shop already registered");
+      throw new BadRequestError('Error: Shop already registered');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -98,8 +98,8 @@ class AccessService {
       //     format: "pem",
       //   },
       // });
-      const privateKey = crypto.randomBytes(64).toString("hex");
-      const publicKey = crypto.randomBytes(64).toString("hex");
+      const privateKey = crypto.randomBytes(64).toString('hex');
+      const publicKey = crypto.randomBytes(64).toString('hex');
       // Public key CtyptoGraphy Standards
 
       const keyStore = await KeyTokenService.createKeyToken({
@@ -110,8 +110,8 @@ class AccessService {
 
       if (!keyStore) {
         return {
-          code: "xxxx",
-          message: "keyStore error",
+          code: 'xxxx',
+          message: 'keyStore error',
         };
       }
 
@@ -126,7 +126,7 @@ class AccessService {
         code: 201,
         metadata: {
           shop: getInfoData({
-            fields: ["_id", "name", "email"],
+            fields: ['_id', 'name', 'email'],
             object: newShop,
           }),
           tokens,
@@ -224,15 +224,15 @@ class AccessService {
       // xoa tat ca token trong keyStore(token khong con han su dung, log out tat ca cac user)
       await KeyTokenService.deleteById(userId);
 
-      throw new ForBiddenError("Something wrong happend. Please re-login");
+      throw new ForBiddenError('Something wrong happend. Please re-login');
     }
 
     if (keyStore.refreshToken !== refreshToken)
-      throw new AuthFailureError("Shop not registered");
+      throw new AuthFailureError('Shop not registered');
 
     //check userId
     const foundShop = await findByEmail({ email });
-    if (!foundShop) throw new AuthFailureError("Shop not registered");
+    if (!foundShop) throw new AuthFailureError('Shop not registered');
 
     // 1. Dua cai refresh token nay vao danh sach RT da duoc su dung
     // 2. cap lai cap AT & RT
