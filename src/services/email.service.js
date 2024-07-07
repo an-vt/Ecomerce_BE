@@ -1,16 +1,18 @@
-"use strict";
+'use strict';
 
-const { NotFoundError } = require("../core/error.response");
-const transporter = require("../dbs/init.nodemailer");
-const { replacePlaceholder } = require("../utils");
-const { newOTP } = require("./otp.service");
-const { getTemplate } = require("./template.service");
+const { NotFoundError } = require('../core/error.response');
+const {
+  runProducerEmail,
+} = require('../tests/message_queue/rabbitmq/providerDLXEmail.producer');
+const { replacePlaceholder } = require('../utils');
+const { newOTP } = require('./otp.service');
+const { getTemplate } = require('./template.service');
 
 const sendEmailLinkVerify = async ({
   html,
   toEmail,
-  subject = "Xac nhan email dang ki",
-  text = "Xac nhan",
+  subject = 'Xac nhan email dang ki',
+  text = 'Xac nhan',
 }) => {
   try {
     const mailOptions = {
@@ -21,15 +23,9 @@ const sendEmailLinkVerify = async ({
       html: html,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-        return error;
-      }
-      console.log("Email sent: " + info.messageId);
-    });
+    runProducerEmail(mailOptions).catch(console.error);
   } catch (error) {
-    console.error("error send email", error);
+    console.error('error send email', error);
     return error;
   }
 };
@@ -40,10 +36,10 @@ const sendEmailToken = async ({ email }) => {
     const token = await newOTP({ email });
 
     // 2. get template
-    const template = await getTemplate({ tem_name: "HTMl Email Token" });
+    const template = await getTemplate({ tem_name: 'HTMl Email Token' });
 
     if (!template) {
-      throw new NotFoundError("Template not found");
+      throw new NotFoundError('Template not found');
     }
 
     // 3. replace placeholder with params
@@ -58,7 +54,7 @@ const sendEmailToken = async ({ email }) => {
 
     return 1;
   } catch (error) {
-    console.error("error send email token", error);
+    console.error('error send email token', error);
   }
 };
 
