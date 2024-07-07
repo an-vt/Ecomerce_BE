@@ -43,8 +43,6 @@ class UserService {
       text: 'Xac nhan',
       html: html,
     }).catch(console.error);
-
-    // await sendEmailToken({ email });
   };
 
   static checkLoginEmailTokenService = async ({ token }) => {
