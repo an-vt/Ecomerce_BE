@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { pick } = require("lodash");
-const { Types } = require("mongoose");
+const { pick } = require('lodash');
+const { Types } = require('mongoose');
 
 const convertToObjectIdMongodb = (id) => new Types.ObjectId(id);
 
@@ -25,7 +25,7 @@ const removeUndefinedObject = (obj) => {
     if (obj[k] === null || obj[k] === undefined) {
       delete obj[k];
     }
-    if (typeof obj[k] === "object" && !Array.isArray(obj[k])) {
+    if (typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
       obj[k] = removeUndefinedObject(obj[k]);
     }
   });
@@ -35,7 +35,7 @@ const removeUndefinedObject = (obj) => {
 const updateObjectNestedParse = (obj) => {
   const final = {};
   Object.keys(obj).forEach((k) => {
-    if (typeof obj[k] === "object" && !Array.isArray(obj[k])) {
+    if (typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
       const response = updateObjectNestedParse(obj[k]);
 
       Object.keys(response).forEach((k2) => {
@@ -51,9 +51,13 @@ const updateObjectNestedParse = (obj) => {
 const replacePlaceholder = (template, params) => {
   let result = template;
   Object.keys(params).forEach((key) => {
-    result = template.replace(new RegExp(`{{${key}}}`, "g"), params[key]);
+    result = template.replace(new RegExp(`{{${key}}}`, 'g'), params[key]);
   });
   return result;
+};
+
+const randomProductId = (template, params) => {
+  return Math.floor(Math.random() * 899999 + 100000);
 };
 
 module.exports = {
@@ -64,4 +68,5 @@ module.exports = {
   updateObjectNestedParse,
   convertToObjectIdMongodb,
   replacePlaceholder,
+  randomProductId,
 };

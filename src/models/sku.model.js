@@ -14,7 +14,7 @@ var skuSchema = new Schema(
         color = [red, green, blue] = [0, 1, 2]
         size = [S, M, L] = [0, 1, 2]
 
-        => red + S = [0, 0]
+        => red + S = [0, 0] 
         => red + M = [0, 1]
     */
     sku_default: { type: Boolean, default: false },
@@ -22,7 +22,9 @@ var skuSchema = new Schema(
     sku_sort: { type: Number, default: 0 },
     sku_price: { type: String, require: true },
     sku_stock: { type: Number, default: 0 },
-    sku_id: { type: String, required: true },
+    product_id: { type: String, required: true },
+    isDraft: { type: Boolean, default: true, index: true, select: false },
+    isPublished: { type: Boolean, default: false, index: true, select: false },
     isDeleted: { type: String, default: false },
   },
   {

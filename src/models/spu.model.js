@@ -8,6 +8,11 @@ const COLLECTION_NAME = 'Spus';
 // Declare the Schema of the Mongo model
 var spuSchema = new Schema(
   {
+    product_id: {
+      // quan jean cao cap
+      type: String,
+      default: '',
+    },
     product_name: {
       // quan jean cao cap
       type: String,
@@ -89,6 +94,4 @@ spuSchema.pre('save', function (next) {
 });
 
 //Export the model
-module.exports = {
-  spu: model(DOCUMENT_NAME, spuSchema),
-};
+module.exports = model(DOCUMENT_NAME, spuSchema);
