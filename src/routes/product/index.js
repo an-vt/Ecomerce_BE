@@ -4,6 +4,7 @@ const express = require('express');
 const productController = require('../../controllers/product.controller');
 const { asyncHandler } = require('../../helpers/asyncHandler');
 const { authenticationV2 } = require('../../auth/authUtils');
+const { readCache } = require('../../middlewares/readCache.middleware');
 const router = express.Router();
 
 // search in here because user not authenticate still can search
@@ -12,7 +13,11 @@ router.get(
   asyncHandler(productController.getListSearchProduct)
 );
 router.get('', asyncHandler(productController.findAllProducts));
-router.get('/sku/select_variation', asyncHandler(productController.findOneSku));
+router.get(
+  '/sku/select_variation',
+  readCache,
+  asyncHandler(productController.findOneSku)
+);
 router.get('/spu/get_spu_info', asyncHandler(productController.findOneSpu));
 router.get('/:product_id', asyncHandler(productController.findProduct));
 

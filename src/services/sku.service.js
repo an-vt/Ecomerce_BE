@@ -3,6 +3,11 @@
 const { omit } = require('lodash');
 const skuModel = require('../models/sku.model');
 const { randomProductId } = require('../utils');
+const { CACHE_PRODUCT } = require('../configs/constant');
+const {
+  getCacheIO,
+  setCacheIOExpiration,
+} = require('../models/repositories/cache.repo');
 
 const newSku = async ({ spu_id, sku_list = [] }) => {
   try {
@@ -20,16 +25,24 @@ const newSku = async ({ spu_id, sku_list = [] }) => {
 
 const oneSku = async ({ sku_id, product_id }) => {
   try {
-    // read cache
-    const sku = await skuModel.findOne({ product_id, sku_id }).lean();
+    // 1. Check params
+    if (sku_id < 0 || product_id < 0) return null;
 
-    console.log('sku', sku);
+    const skuCacheKey = `${CACHE_PRODUCT.SKU}${sku_id}`;
 
-    if (!sku) {
-      // set cached
-    }
+    // 3. Read from dbs
+    const skuCache = await skuModel.findOne({ product_id, sku_id }).lean();
+    const valueCache = skuCache ? skuCache : null;
+    setCacheIOExpiration({
+      key: skuCacheKey,
+      value: JSON.stringify(valueCache),
+      expirationInSeconds: 30, // 30 seconds
+    }).then();
 
-    return omit(sku, ['isDeleted', 'createdAt', 'updatedAt', '__v']);
+    return {
+      data: skuCache,
+      toLoad: 'dbs',
+    };
   } catch (error) {
     console.log('Error', error);
   }
