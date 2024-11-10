@@ -11,6 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 const cors = require('cors'); //
 var cookieParser = require('cookie-parser');
 const ioRedis = require('./dbs/init.ioredis');
+const crypto = require('crypto');
 
 // init middlewares
 app.use(morgan('dev'));
@@ -67,6 +68,8 @@ app.use((req, res, next) => {
   error.status = 404;
   next(error);
 });
+
+console.log('api key ::', crypto.randomBytes(64).toString('hex'));
 
 app.use((error, req, res, next) => {
   const statusCode = error.status || 500;
