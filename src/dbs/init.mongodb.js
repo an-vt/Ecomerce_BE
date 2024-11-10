@@ -1,11 +1,13 @@
-"use strict";
-const mongoose = require("mongoose");
-const { countConnect } = require("../helpers/checkConnect");
+'use strict';
+const mongoose = require('mongoose');
+const { countConnect } = require('../helpers/checkConnect');
 const {
   db: { host, name, port },
-} = require("../configs/config");
+} = require('../configs/config');
 
-const connectString = `mongodb://${host}:${port}/${name}`;
+const connectString = `mongodb://${host}:${port}/${name}?authSource=admin`;
+
+console.log('connectString', connectString);
 
 class Database {
   constructor() {
@@ -13,14 +15,14 @@ class Database {
   }
 
   //connect
-  connect(type = "mongodb") {
+  connect(type = 'mongodb') {
     if (1 === 1) {
-      mongoose.set("debug", true);
-      mongoose.set("debug", { color: true });
+      mongoose.set('debug', true);
+      mongoose.set('debug', { color: true });
       mongoose
         .connect(connectString)
-        .then((_) => console.log("Connected Mongodb Success"))
-        .catch((err) => console.log("Connected to Mongodb Fail!"));
+        .then((_) => console.log('Connected Mongodb Success'))
+        .catch((err) => console.log('Connected to Mongodb Fail!'));
     }
   }
   static getInstance() {
