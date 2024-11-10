@@ -1,31 +1,52 @@
-version: "3.7"
+version: '3.8'
+
 services:
-  zookeeper:
-    restart: always
-    image: docker.io/bitnami/zookeeper:3.8
-    ports:
-      - "2181:2181"
-    volumes:
-      - "zookeeper-volume:/bitnami"
+  # MongoDB service
+  mongo:
+    image: mongo:8.0.3
+    container_name: mongo
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-  kafka:
-    restart: always
-    image: docker.io/bitnami/kafka:3.3
-    ports:
-      - "9093:9093"
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123456
     volumes:
-      - "kafka-volume:/bitnami"
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+    networks:
+      - ecomerce_net
+
+  # Redis service
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - ecomerce_net
+
+  # RabbitMQ service
+  rabbitmq:
+    image: rabbitmq:4.0.3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - '15672:15672' # Management UI
+      - '5672:5672' # AMQP protocol
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
-    depends_on:
-      - zookeeper
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=123456
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - ecomerce_net
+
 volumes:
-  kafka-volume:
-  zookeeper-volume:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:
+
+# Define the custom network
+networks:
+  ecomerce_net:
+    driver: bridge
